@@ -1,0 +1,35 @@
+name: TEFAS Fon Verilerini Guncelle
+
+on:
+  schedule:
+    # UTC saatine göre 16:30 (Türkiye saatiyle 19:30 civarı TEFAS verileri girilmiş olur)
+    - cron: '30 16 * * 1-5'
+  workflow_dispatch: # İstediğimiz zaman manuel çalıştırmak için bir buton ekler
+
+jobs:
+  guncelle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repoyu Klonla
+        uses: actions/checkout@v3
+
+      - name: Python Kur
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Gerekli Kutuphaneleri Yukle
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4
+
+      - name: Python Scriptini Calistir
+        run: python main.py
+
+      - name: Yeni Verileri Github'a Kaydet
+        run: |
+          git config --global user.name "Takibat Bot"
+          git config --global user.email "bot@takibat.com"
+          git add fon_fiyatlari.json
+          git commit -m "Günlük TEFAS fon fiyatları güncellendi" || echo "Değişiklik yok"
+          git push
